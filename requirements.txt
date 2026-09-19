@@ -3,3 +3,4 @@ jupyterlab
 openpyxl
 matplotlib
 seaborn
+pywin32; sys_platform == "win32"
