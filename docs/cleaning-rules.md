@@ -39,7 +39,7 @@ Each duration is calculated only when both endpoint timestamps exist and the end
 - `transportation_days` = customer delivery timestamp minus carrier handoff timestamp, in days.
 - `total_lead_time_days` = customer delivery timestamp minus purchase timestamp, in days.
 
-The validity flags are Pandas nullable BooleanDtype fields with three states: `True` means all required timestamps exist and the sequence is valid, `False` means all required timestamps exist and the sequence is invalid, and null means one or more required timestamps are missing. Invalid sequences produce a false flag and a null corresponding duration. The 1,359 carrier-before-approval records and 23 delivery-before-carrier records are retained; they are not deleted or corrected. Cancelled orders remain in `fact_orders`, but lifecycle durations are not intended for later delivery-duration KPIs without an explicit delivered-order population rule. After import, Power BI should explicitly assign the validity columns as Boolean/True-False fields so the three states remain intentional.
+The validity flags (`valid_approval_sequence`, `valid_preparation_sequence`, `valid_transportation_sequence`, and `valid_total_lead_time_sequence`) are Pandas nullable BooleanDtype fields with three states: `True` means all required timestamps exist and the sequence is valid, `False` means all required timestamps exist and the sequence is invalid, and null means one or more required timestamps are missing. Invalid sequences produce a false flag and a null corresponding duration. The 1,359 carrier-before-approval records and 23 delivery-before-carrier records are retained; they are not deleted or corrected. Cancelled orders remain in `fact_orders`, but lifecycle durations are not intended for later delivery-duration KPIs without an explicit delivered-order population rule. After import, Power BI should explicitly assign the validity columns as Boolean/True-False fields so the three states remain intentional.
 
 ## Delivery-classification rules
 
@@ -98,10 +98,11 @@ The executed notebook completed with zero cell errors. All checks below passed:
 | Order payment totals match raw payment table within tolerance | PASS |
 | Classification values limited to three allowed values | PASS |
 | Same-date deliveries classified On Time | PASS: 1,292 orders |
-| Invalid sequences have null corresponding durations | PASS for approval, preparation, and transportation checks |
+| Invalid sequences have null corresponding durations | PASS for approval, preparation, transportation, and total lead-time checks |
+| Total lead-time validity field exported and validated | PASS: nullable Boolean, missing-endpoint null behavior, and invalid-count comparison |
 | Processed outputs have no duplicate column names | PASS |
 
-Invalid sequence counts observed in the raw data are 0 approval-before-purchase, 1,359 carrier-before-approval, and 23 delivery-before-carrier. The source contains 99,224 review rows as read by pandas. The category-count correction changes 1,451 orders, corresponding to orders whose resolved display categories now include `Unknown`. Observed monetary differences are 0.0 for item price, item freight, order merchandise, order freight, and payment totals, all within the documented tolerance.
+Invalid sequence counts observed in the raw data are 0 approval-before-purchase, 1,359 carrier-before-approval, and 23 delivery-before-carrier. The exported `valid_total_lead_time_sequence` field is null whenever purchase or delivery timestamps are missing, false only when delivery precedes purchase, and true otherwise. The source contains 99,224 review rows as read by pandas. The category-count correction changes 1,451 orders, corresponding to orders whose resolved display categories now include `Unknown`. Observed monetary differences are 0.0 for item price, item freight, order merchandise, order freight, and payment totals, all within the documented tolerance.
 
 ## Known limitations
 
